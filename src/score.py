@@ -29,7 +29,7 @@ def score(lrs):
     preds=[]
 
     for row in X_test.iterrows():
-        pred,_=predict(row[1].values, flag='test')
+        pred,_=predict(row[1].values, flag="test")
         preds.append(pred)
 
     print(roc_auc_score(y_test, preds))

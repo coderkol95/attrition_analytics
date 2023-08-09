@@ -30,12 +30,12 @@ with open(f'assets/data_pipe.pkl','rb') as f:
 
 X_trains,_ = get_data('train')
 
-def predict(data, flag='live'):
+def predict(data, flag="live"):
     
-    if flag=='live':
-        if data.ndim==1:
-            data = data.reshape(1,-1)
-        data = pd.DataFrame(data=data, columns=[NUMERICAL_FEATS+CATEGORICAL_FEATS])
+    if data.ndim==1:
+        data = data.reshape(1,-1)
+    data = pd.DataFrame(data=data, columns=[NUMERICAL_FEATS+CATEGORICAL_FEATS])
+    if flag=="live":
         data=data_pipe.transform(data)
         data = pd.DataFrame(data=data, columns=[NUMERICAL_FEATS+CATEGORICAL_FEATS])
 
@@ -61,9 +61,9 @@ def predict(data, flag='live'):
 def explain_causes(model,train,data, flag):
 
     cols= [NUMERICAL_FEATS+CATEGORICAL_FEATS]
-    explainer = shap.Explainer(model, pd.DataFrame(train,columns=cols), feature_names=cols)
+    explainer = shap.Explainer(model, train, feature_names=cols)
     shap_values = explainer(data)
-    print(shap_values.values)
+
     causes=pd.Series(shap_values.values[0], index=cols)
     if flag=='positive':
         causes=causes[causes>0]/sum(causes[causes>0]) *100
