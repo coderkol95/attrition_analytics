@@ -3,12 +3,21 @@ import numpy as np
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import LabelEncoder,OrdinalEncoder,StandardScaler
 from sklearn.model_selection import train_test_split
-RANDOM_STATE=42
-SPLITS=5
+import pickle
+import json
+with open("config.json","r") as f:
+    CONFIG=json.load(f)
+
+RANDOM_STATE=CONFIG["RANDOM_STATE"]
+SPLITS=CONFIG["SPLITS"]
+DATA_PATH=CONFIG["data_path"]
+NUMERICAL_FEATS=CONFIG["numerical_feats"]
+CATEGORICAL_FEATS=CONFIG["categorical_feats"]
+
 
 def get_split_data(data, test_ratio=0.1, val_ratio=0.1):
 
-    X,y=data[numerical_feats+categorical_feats],data['Attrition']
+    X,y=data[NUMERICAL_FEATS+CATEGORICAL_FEATS],data['Attrition']
     X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=test_ratio, random_state=RANDOM_STATE)
     X_train, X_val, y_train, y_val = train_test_split(X_train,y_train,test_size=val_ratio, random_state=RANDOM_STATE)
 
@@ -16,11 +25,17 @@ def get_split_data(data, test_ratio=0.1, val_ratio=0.1):
 
 def transform_data(X_train, X_val, X_test, y_train, y_val, y_test):
 
-    data_pipeline = ColumnTransformer([('encoder',OrdinalEncoder(),categorical_feats), ('scaler',StandardScaler(),numerical_feats)])
+    data_pipeline = ColumnTransformer([('encoder',OrdinalEncoder(),CATEGORICAL_FEATS), ('scaler',StandardScaler(),NUMERICAL_FEATS)])
     label_enc = LabelEncoder()
 
     data_pipeline.fit(X_train)
     label_enc.fit(y_train)
+
+    with open(f'assets/data_pipe.pkl','wb') as f:
+        pickle.dump(data_pipeline,f)
+
+    with open(f'assets/target_encoder.pkl','wb') as f:
+        pickle.dump(label_enc,f)
 
     X_train = data_pipeline.transform(X_train)
     X_val = data_pipeline.transform(X_val)
@@ -64,13 +79,13 @@ def sample_data_for_models(X_train, y_train):
 
 def name_the_columns(X,Y):
 
-    XX = [pd.DataFrame(x, columns=[numerical_feats+categorical_feats]) for x in X]
+    XX = [pd.DataFrame(x, columns=[NUMERICAL_FEATS+CATEGORICAL_FEATS]) for x in X]
 
     YY = [pd.DataFrame(y) for y in Y]
 
     return XX, YY
 
-def prepare_data(data, numerical_feats, categorical_feats):
+def prepare_data(data):
 
     X_train, X_val, X_test, y_train, y_val, y_test = get_split_data(data)
     X_train, X_val, X_test, y_train, y_val, y_test = transform_data(X_train, X_val, X_test, y_train, y_val, y_test)
@@ -80,19 +95,19 @@ def prepare_data(data, numerical_feats, categorical_feats):
 
     for i, x in enumerate(X):
         if i<5:
-            x.to_csv(f"../data/X_train{i}.csv", index=False)
+            x.to_csv(f"data/X_train{i}.csv", index=False)
         if i==5:
-            x.to_csv("../data/X_val.csv", index=False)
+            x.to_csv("data/X_val.csv", index=False)
         if i==6:
-            x.to_csv("../data/X_test.csv", index=False)
+            x.to_csv("data/X_test.csv", index=False)
    
     for i, y in enumerate(Y):
         if i<5:
-            y.to_csv(f"../data/y_train{i}.csv", index=False)
+            y.to_csv(f"data/y_train{i}.csv", index=False)
         if i==5:
-            y.to_csv("../data/y_val.csv", index=False)
+            y.to_csv("data/y_val.csv", index=False)
         if i==6:
-            y.to_csv("../data/y_test.csv", index=False)
+            y.to_csv("data/y_test.csv", index=False)
 
 def get_data(mode='test'):
 
@@ -118,12 +133,6 @@ def get_data(mode='test'):
 
 if __name__=="__main__":
 
-    data = pd.read_excel("attrition_analytics/Attrition Data Exercise.xlsx")
+    data = pd.read_excel(DATA_PATH)
 
-    categorical_feats = ["BusinessTravel","Department","EducationField","JobRole","MaritalStatus","OverTime","Gender","Location"]
-    numerical_feats = ['JobLevel', 'StockOptionLevel', 'PercentSalaryHike', 'EnvironmentSatisfaction',
-    'PerformanceRating', 'MonthlyIncome', 'JobSatisfaction', 'TotalWorkingYears', 'TrainingTimesLastYear', 'YearsWithCurrManager',
-    'DistanceFromHome', 'DailyRate', 'YearsSinceLastPromotion', 'Company Tenure (yrs)', 'MonthlyRate', 'HourlyRate', 'YearsInCurrentRole',
-    'WorkLifeBalance', 'Age', 'Education', 'JobInvolvement', 'NumCompaniesWorked', 'RelationshipSatisfaction']
-
-    prepare_data(data, numerical_feats, categorical_feats)
+    prepare_data(data)

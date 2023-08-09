@@ -1,0 +1,9 @@
+{
+    "categorical_feats" : ["BusinessTravel","Department","EducationField","JobRole","MaritalStatus","OverTime","Gender","Location"],
+    "numerical_feats" : ["JobLevel", "StockOptionLevel", "PercentSalaryHike", "EnvironmentSatisfaction","PerformanceRating", "MonthlyIncome", "JobSatisfaction", "TotalWorkingYears", "TrainingTimesLastYear", "YearsWithCurrManager",
+    "DistanceFromHome", "DailyRate", "YearsSinceLastPromotion", "Company Tenure (yrs)", "MonthlyRate", "HourlyRate", "YearsInCurrentRole",
+    "WorkLifeBalance", "Age", "Education", "JobInvolvement", "NumCompaniesWorked", "RelationshipSatisfaction"],
+    "data_path":"data/Attrition Data Exercise.xlsx",
+    "SPLITS":5,
+    "RANDOM_STATE":42
+}
